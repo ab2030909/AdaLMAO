@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 )
 
 // ownedRe identifies hook commands that belong to AdaLmao: `<...adalmao[.exe]> hook <event>`.
-var ownedRe = regexp.MustCompile(`(?i)adalmao(\.exe)?["']?\s+hook\s+[a-z-]+\s*$`)
+var ownedRe = regexp.MustCompile(`(?i)adalmao(\.exe)?["']?\s+hook\s+[a-z-]+"?\s*$`)
 
 var eventArg = map[string]string{
 	"PreToolUse": "pre-tool-use", "PostToolUse": "post-tool-use", "UserPromptSubmit": "user-prompt-submit", "Stop": "stop",
@@ -41,13 +42,36 @@ type Report struct {
 func owned(cmd string) bool { return ownedRe.MatchString(strings.TrimSpace(cmd)) }
 
 // HookCommand builds the command string for an event using the given executable path.
+//
+// AdaL runs hooks through `cmd.exe /c` on Windows and `/bin/sh -c` (or $SHELL) elsewhere. Verified against
+// AdaL 1.11.5 on Windows: any hook command containing double quotes (a quoted path with spaces, with or
+// without a `cmd /s /c` wrapper) silently failed to launch. So on Windows the path must contain no spaces;
+// Install() converts it to its 8.3 short form and refuses if that is impossible.
 func HookCommand(exe, event string) string {
-	if strings.ContainsAny(exe, " \t") {
-		exe = `"` + exe + `"`
-	}
-	return exe + " hook " + eventArg[event]
+	return hookCommandFor(runtime.GOOS, exe, event)
 }
 
+func hookCommandFor(goos, exe, event string) string {
+	arg := eventArg[event]
+	if goos != "windows" && strings.ContainsAny(exe, " \t&()^%!;'\"$`\\") {
+		return "'" + strings.ReplaceAll(exe, "'", `'\''`) + "' hook " + arg
+	}
+	return exe + " hook " + arg
+}
+
+// resolveExe makes the executable path safe to embed in a hook command.
+func resolveExe(exe string) (string, error) {
+	if runtime.GOOS != "windows" {
+		return exe, nil
+	}
+	if strings.ContainsAny(exe, " \t") {
+		exe = shortPath(exe)
+	}
+	if strings.ContainsAny(exe, " \t&()^%!\"") {
+		return "", fmt.Errorf("the executable path %q contains spaces or special characters, and AdaL's Windows hook launcher fails on quoted commands. Move adalmao.exe to a simple path such as C:\\adalmao\\ (or C:\\Users\\<you>\\bin) and run `adalmao install` from there", exe)
+	}
+	return exe, nil
+}
 func load() (map[string]json.RawMessage, []byte, error) {
 	b, err := os.ReadFile(SettingsPath())
 	if errors.Is(err, os.ErrNotExist) {
@@ -142,6 +166,10 @@ func write(m map[string]json.RawMessage, orig []byte, rep *Report) error {
 // Install registers the hooks. exe is the absolute path to the adalmao binary.
 func Install(exe string) (*Report, error) {
 	rep := &Report{SettingsPath: SettingsPath()}
+	exe, err := resolveExe(exe)
+	if err != nil {
+		return nil, err
+	}
 	if _, err := exec.LookPath("adal"); err != nil {
 		if _, serr := os.Stat(config.AdalDir()); serr != nil {
 			return nil, fmt.Errorf("AdaL CLI not detected (no `adal` on PATH and %s missing). Install AdaL first", config.AdalDir())

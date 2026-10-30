@@ -13,6 +13,7 @@ type Cmd struct {
 	Args      []string // args after prog (and after git sub)
 	Redirects []string // targets of > and >>
 	Op        string   // operator that follows this command (; && || | &)
+	Elevated  bool     // ran through sudo/doas
 	Text      string   // normalized text used for user-rule matching
 }
 
@@ -198,6 +199,7 @@ func normalize(s seg, depth int) []Cmd {
 		break
 	}
 	var extra []Cmd
+	elevated := false
 	for len(toks) > 0 {
 		t := toks[0]
 		if isAssign(t) {
@@ -206,6 +208,9 @@ func normalize(s seg, depth int) []Cmd {
 		}
 		p := progName(t)
 		if wrapperSkip[p] {
+			if p == "sudo" || p == "doas" {
+				elevated = true
+			}
 			toks = toks[1:]
 			// skip wrapper flags (and assignments for env)
 			for len(toks) > 0 && (strings.HasPrefix(toks[0], "-") || isAssign(toks[0])) {
@@ -233,7 +238,7 @@ func normalize(s seg, depth int) []Cmd {
 	}
 	var cmds []Cmd
 	if len(toks) > 0 {
-		c := Cmd{Prog: progName(toks[0]), Args: toks[1:], Redirects: redirs, Op: s.op}
+		c := Cmd{Prog: progName(toks[0]), Args: toks[1:], Redirects: redirs, Op: s.op, Elevated: elevated}
 		if c.Prog == "git" {
 			c.Sub, c.Args = gitSub(c.Args)
 		}

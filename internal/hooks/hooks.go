@@ -62,6 +62,7 @@ func Handle(event string, stdin []byte) (res Result) {
 			res = Result{} // fail open on internal errors
 		}
 	}()
+	captureIfRequested(event, stdin)
 	var in Input
 	if err := json.Unmarshal(stdin, &in); err != nil {
 		return Result{}
@@ -130,38 +131,43 @@ func preTool(cfg *config.Config, in Input) Result {
 		b.WriteString("\nDo not retry this operation or work around it. Tell the user and ask how to proceed.")
 		return Result{Exit: 2, Stderr: b.String()}
 	}
-	var b strings.Builder
-	b.WriteString("[AdaLmao] Heads-up on the tool call being executed:\n")
+	// AdaL documents that PreToolUse cannot add context, so queue the notes and deliver them with the
+	// next PostToolUse result for this session.
+	var notes []string
 	for _, o := range ds {
 		if o.Level >= decision.Review {
-			fmt.Fprintf(&b, "- (%s) %s", o.Level, o.Reason)
+			n := fmt.Sprintf("(%s) %s", o.Level, o.Reason)
 			if o.Suggestion != "" {
-				fmt.Fprintf(&b, " — %s", o.Suggestion)
+				n += " — " + o.Suggestion
 			}
-			b.WriteString("\n")
+			notes = append(notes, n)
 		}
 	}
-	return Result{Stdout: strings.TrimSpace(b.String())}
+	queueNotes(in.SessionID, notes)
+	return Result{}
 }
-
 func postTool(cfg *config.Config, in Input) Result {
-	if !cfg.Sentinel.Enabled {
-		return Result{}
+	var parts []string
+	if notes := takeNotes(in.SessionID); len(notes) > 0 {
+		parts = append(parts, "[AdaLmao] Heads-up on the tool call that just ran:\n- "+strings.Join(notes, "\n- "))
 	}
 	kind, _ := guardrails.ClassifyTool(in.ToolName, in.ToolInput)
+	mutating := false
 	switch kind {
 	case guardrails.OpBash, guardrails.OpCreate, guardrails.OpEdit, guardrails.OpRewrite, guardrails.OpDelete:
-	default:
+		mutating = true
+	}
+	if cfg.Sentinel.Enabled && mutating {
+		if fs := sentinel.Fresh(in.SessionID, sentinel.Check(cfg, in.Cwd)); len(fs) > 0 {
+			config.LogEvent(map[string]any{"event": "PostToolUse", "tool": in.ToolName, "findings": len(fs), "first": fs[0].Msg, "session": in.SessionID})
+			parts = append(parts, sentinel.Format(fs, cfg.Sentinel.Severity))
+		}
+	}
+	if len(parts) == 0 {
 		return Result{}
 	}
-	fs := sentinel.Fresh(in.SessionID, sentinel.Check(cfg, in.Cwd))
-	if len(fs) == 0 {
-		return Result{}
-	}
-	config.LogEvent(map[string]any{"event": "PostToolUse", "tool": in.ToolName, "findings": len(fs), "first": fs[0].Msg, "session": in.SessionID})
-	return contextJSON(sentinel.Format(fs, cfg.Sentinel.Severity))
+	return contextJSON(strings.Join(parts, "\n\n"))
 }
-
 func userPrompt(cfg *config.Config, in Input) Result {
 	var parts []string
 	if m := modes.Compose(cfg.General.ActiveModes); m != "" {

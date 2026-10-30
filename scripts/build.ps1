@@ -1,5 +1,5 @@
 # Build adalmao on Windows without make.
-param([string]$Version = "0.1.0")
+param([string]$Version = "0.1.1")
 $ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Force dist | Out-Null
 $ld = "-s -w -X github.com/adalmao/adalmao/internal/cli.Version=$Version"

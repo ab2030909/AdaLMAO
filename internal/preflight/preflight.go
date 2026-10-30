@@ -16,6 +16,7 @@ import (
 type Result struct {
 	Text     string
 	Problems int // issues that should be resolved before pushing
+	Blocking int // issues serious enough to stop a push (in-progress merge/rebase, confirmed conflicts)
 }
 
 func lines(s string) []string {
@@ -86,6 +87,7 @@ func Run(cfg *config.Config, dir string) Result {
 			if _, err := os.Stat(path); err == nil {
 				fmt.Fprintf(&b, "⚠️  A %s is in progress — finish or abort it first.\n", p)
 				r.Problems++
+				r.Blocking++
 			}
 		}
 	}
@@ -187,6 +189,7 @@ func baseConflicts(b *strings.Builder, r *Result, root, base string) {
 				}
 				b.WriteString("\n")
 				r.Problems++
+				r.Blocking++
 				return
 			}
 		}

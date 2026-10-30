@@ -65,3 +65,23 @@ func TestConfigPreservesUnknownFields(t *testing.T) {
 		t.Fatalf("unknown fields lost: %s", b)
 	}
 }
+
+func TestHookCommandForms(t *testing.T) {
+	cases := []struct{ goos, exe, want string }{
+		{"windows", `C:\bin\adalmao.exe`, `C:\bin\adalmao.exe hook pre-tool-use`},
+		{"linux", "/usr/local/bin/adalmao", "/usr/local/bin/adalmao hook pre-tool-use"},
+		{"linux", "/opt/my tools/adalmao", "'/opt/my tools/adalmao' hook pre-tool-use"},
+	}
+	for _, c := range cases {
+		got := hookCommandFor(c.goos, c.exe, "PreToolUse")
+		if got != c.want {
+			t.Errorf("%s: got %s want %s", c.goos, got, c.want)
+		}
+		if !owned(got) {
+			t.Errorf("command not recognised as owned: %s", got)
+		}
+	}
+	if owned("python adalmao_hook.py") || owned("echo hook pre-tool-use") {
+		t.Error("foreign command wrongly treated as owned")
+	}
+}

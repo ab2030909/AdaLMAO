@@ -40,8 +40,8 @@ type Rule struct {
 }
 
 type Enforce struct {
-	Enabled         bool   `json:"enabled"`
-	AllowDCOSignoff bool   `json:"allow_dco_signoff"`
+	Enabled         bool `json:"enabled"`
+	AllowDCOSignoff bool `json:"allow_dco_signoff"`
 	// DisabledBuiltins lists built-in rule IDs the user has switched off (e.g. "git-clean-force").
 	DisabledBuiltins []string `json:"disabled_builtins"`
 	Rules            []Rule   `json:"rules"`
@@ -59,6 +59,8 @@ type Budget struct {
 	// Optional user-supplied prices (USD per 1M tokens). Costs derived from them are estimates.
 	InputPricePerMTok  float64 `json:"input_price_per_mtok"`
 	OutputPricePerMTok float64 `json:"output_price_per_mtok"`
+	// Applies to cached-read and cache-write tokens together (0 = leave them out of the estimate).
+	CachedInputPricePerMTok float64 `json:"cached_input_price_per_mtok"`
 }
 
 type Git struct {
@@ -88,8 +90,8 @@ type Config struct {
 // Default returns a config with sensible defaults.
 func Default() *Config {
 	return &Config{
-		Version:  CurrentVersion,
-		General:  General{Enabled: true, ActiveModes: []string{"focus"}},
+		Version: CurrentVersion,
+		General: General{Enabled: true, ActiveModes: []string{"focus"}},
 		Guardrails: Guardrails{
 			Enabled: true, ProtectEnvFiles: true, ProtectGitDir: true, ProtectTests: true,
 			ProtectConfigFiles: true, WarnOnPublicAPIChanges: true, WarnOnDefaultValueChange: true,

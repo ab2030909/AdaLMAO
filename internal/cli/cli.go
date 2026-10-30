@@ -9,7 +9,7 @@ import (
 )
 
 // Version is set at build time via -ldflags "-X github.com/adalmao/adalmao/internal/cli.Version=..."
-var Version = "0.1.0"
+var Version = "0.1.1"
 
 var (
 	stdout io.Writer = os.Stdout
@@ -44,8 +44,10 @@ func commands() []command {
 		{name: "check", summary: "Dry-run the safety rules: check -- <shell command>", run: cmdCheck},
 		{name: "log", summary: "Show recent AdaLmao decisions", run: cmdLog},
 		{name: "config", summary: "config [path|show|validate|set <key> <value>]", run: cmdConfig},
-		{name: "loop", summary: "Scored experiment loops (PLANNED — not implemented)", run: cmdPlanned("loop"), status: "planned"},
-		{name: "update", summary: "Self-update (PLANNED — not implemented)", run: cmdPlanned("update"), status: "planned"},
+		{name: "verify", summary: "Verify hooks launch and block correctly (--live runs real AdaL)", run: cmdVerify},
+		{name: "prepush", summary: "prepush install|remove|status — optional git pre-push preflight", run: cmdPrepush},
+		{name: "loop", summary: "Bounded, verified AdaL experiment loop in an isolated worktree", run: cmdLoop},
+		{name: "update", summary: "Check for / apply a checksum-verified release (--apply)", run: cmdUpdate},
 		{name: "version", summary: "Print version", run: cmdVersion},
 		{name: "hook", summary: "internal: AdaL hook entry point", run: cmdHook, hidden: true},
 	}
@@ -94,21 +96,6 @@ func printHelp() {
 func cmdVersion(_ []string) int {
 	fmt.Fprintf(stdout, "adalmao v%s\n", Version)
 	return 0
-}
-
-func cmdPlanned(name string) func([]string) int {
-	return func(_ []string) int {
-		switch name {
-		case "loop":
-			fmt.Fprintln(stderr, "`adalmao loop` is PLANNED and not implemented yet.")
-			fmt.Fprintln(stderr, "AdaL does expose headless runs (`adal -q \"...\" -o json`, `--permission-mode`, `--thinking-effort`), which a")
-			fmt.Fprintln(stderr, "future loop runner (explicit start, iteration + budget limits, results ledger) can build on.")
-		default:
-			fmt.Fprintln(stderr, "`adalmao update` (self-update) is PLANNED and not implemented yet.")
-			fmt.Fprintln(stderr, "To update: rebuild from source (`make build`) or download a release binary, then re-run `adalmao install`.")
-		}
-		return 1
-	}
 }
 
 func errf(format string, a ...any) int {

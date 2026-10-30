@@ -1,4 +1,4 @@
-VERSION ?= 0.1.0
+VERSION ?= 0.1.1
 LDFLAGS := -s -w -X github.com/adalmao/adalmao/internal/cli.Version=$(VERSION)
 
 .PHONY: build test cross clean

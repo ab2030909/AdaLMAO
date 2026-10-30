@@ -127,6 +127,9 @@ func evalCmd(cfg *config.Config, cwd string, c Cmd, all []Cmd, idx int) []decisi
 		out = append(out, evalGit(cfg, c)...)
 	}
 	out = append(out, evalFS(cfg, cwd, c)...)
+	if c.Elevated {
+		out = append(out, lvl(decision.Risky, "elevated", "Command runs with elevated privileges (sudo/doas).", "Prefer running without sudo, or ask the user to run it."))
+	}
 
 	// pipe to shell: curl ... | sh
 	if c.Op == "|" && idx+1 < len(all) {
@@ -191,7 +194,7 @@ func evalGit(cfg *config.Config, c Cmd) []decision.Decision {
 		}
 		if discardAll && !has(a, "-b", "-B") {
 			out = append(out, blk("no-discard-all", "This would discard all uncommitted changes in the working tree.", "Stash first (`git stash`) or restore specific files after confirming with the user."))
-		} else if has(a, "--") || c.Sub == "restore" {
+		} else if has(a, "--") || (c.Sub == "restore" && !(has(a, "--staged", "-S") && !has(a, "--worktree", "-W"))) {
 			out = append(out, lvl(decision.Risky, "git-discard-file", "Discarding uncommitted changes to specific files.", "Make sure nothing there is unsaved work."))
 		}
 	case "stash":
