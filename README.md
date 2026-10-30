@@ -6,8 +6,6 @@ AdaLmao is an open-source companion toolkit for [AdaL CLI](https://docs.sylph.ai
 
 > AdaLmao is a **practical guardrail layer, not a security sandbox.** AdaL hooks fail open: if a hook times out or fails to launch, the action goes ahead. Treat AdaLmao as a seatbelt, not a vault.
 
-Inspired by [KiroBuff](https://github.com/AlleyBo55/KiroBuff) for Kiro CLI, adapted to what AdaL actually exposes.
-
 ```text
 🚨 NICE TRY!
 
