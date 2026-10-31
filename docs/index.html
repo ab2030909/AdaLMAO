@@ -16,10 +16,11 @@
 <div class="layout">
 <aside>
   <a class="brand" href="#overview" aria-label="AdaLmao home"><img src="assets/logo-small.png" alt="AdaLmao mascot logo"></a>
-  <div class="ver">v0.1.1 · docs</div>
+  <div class="ver">v0.1.1 · early access</div>
   <nav id="nav">
     <h6>Start</h6>
     <a href="#overview">Overview</a>
+    <a href="#download">Download</a>
     <a href="#install">Installation</a>
     <a href="#quickstart">Quick start</a>
     <a href="#verify">Verification</a>
@@ -39,6 +40,7 @@
     <a href="#limits">Limitations</a>
     <a href="#status">Feature status</a>
     <a href="#faq">Troubleshooting</a>
+    <a href="#report">Report a bug</a>
   </nav>
 </aside>
 
@@ -46,11 +48,12 @@
 <div class="hero" id="overview">
   <div class="hero-grid">
   <div>
-  <span class="pill"><i></i> Open source · Go · zero dependencies</span>
+  <span class="pill"><i></i> v0.1.1 Early Access · Go · zero dependencies</span>
   <h1>Your AdaL CLI's <em>chaotic little bodyguard.</em></h1>
   <p class="lead">AdaLmao plugs into AdaL's lifecycle hooks to block destructive commands, protect your tests and secrets, watch for regressions, inject focus modes, track token usage and check Git before you push. One standalone binary. No external AI API. No database.</p>
   <div class="cta">
-    <a class="btn primary" href="#install">Get started →</a>
+    <a class="btn primary" href="#download">Download v0.1.1 →</a>
+    <a class="btn" href="#install">Install</a>
     <a class="btn" href="https://github.com/ab2030909/AdaLMAO">GitHub ↗</a>
     <a class="btn" href="#commands">Commands</a>
   </div>
@@ -81,9 +84,33 @@ Safer alternative: Use `git stash` or `git reset --soft`/`--mixed`,
   </div>
 </div>
 
+<section id="download">
+  <h2>Download</h2>
+  <p class="sub">AdaLmao v0.1.1 — Early Access. Pre-built binaries and checksums are on the <a href="https://github.com/ab2030909/AdaLMAO/releases/tag/v0.1.1">GitHub release page</a>.</p>
+  <div class="warn"><b>Early Access / Experimental.</b> This is not a stable 1.0. Expect rough edges and possible breaking changes. Only Windows has been tested with a real AdaL CLI; Linux and macOS builds are cross-compiled and their runtime testing is still pending.</div>
+  <div class="tbl"><table>
+    <tr><th>Platform</th><th>File</th><th>Status</th></tr>
+    <tr><td>Windows x64</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/adalmao-windows-amd64.exe"><code>adalmao-windows-amd64.exe</code></a></td><td><span class="tag t-ok">TESTED WITH ADAL</span></td></tr>
+    <tr><td>Linux x64</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/adalmao-linux-amd64"><code>adalmao-linux-amd64</code></a></td><td><span class="tag t-part">RUNTIME PENDING</span></td></tr>
+    <tr><td>Linux ARM64</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/adalmao-linux-arm64"><code>adalmao-linux-arm64</code></a></td><td><span class="tag t-part">RUNTIME PENDING</span></td></tr>
+    <tr><td>macOS Intel</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/adalmao-darwin-amd64"><code>adalmao-darwin-amd64</code></a></td><td><span class="tag t-part">RUNTIME PENDING</span></td></tr>
+    <tr><td>macOS Apple Silicon</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/adalmao-darwin-arm64"><code>adalmao-darwin-arm64</code></a></td><td><span class="tag t-part">RUNTIME PENDING</span></td></tr>
+    <tr><td>All</td><td><a href="https://github.com/ab2030909/AdaLMAO/releases/download/v0.1.1/checksums.txt"><code>checksums.txt</code></a></td><td>SHA-256 of every binary</td></tr>
+  </table></div>
+  <h3>Verify, then install</h3>
+  <div class="code"><pre><span class="c"># Windows PowerShell: compare with the matching line in checksums.txt</span>
+(Get-FileHash .\adalmao-windows-amd64.exe -Algorithm SHA256).Hash.ToLower()
+
+<span class="c"># Linux / macOS</span>
+sha256sum -c --ignore-missing checksums.txt   <span class="c"># macOS: shasum -a 256 -c --ignore-missing checksums.txt</span>
+chmod +x adalmao-linux-amd64 &amp;&amp; ./adalmao-linux-amd64 version</pre><button class="copy">Copy</button></div>
+  <p>Then rename it to <code>adalmao</code> (<code>adalmao.exe</code> on Windows), put it in a permanent folder — on Windows a path <b>without spaces</b>, like <code>C:\adalmao\</code> — and run <code>adalmao install</code>, then restart AdaL.</p>
+  <div class="note">The binaries are <b>not code-signed</b>. Windows SmartScreen may warn, and on macOS you may need <code>xattr -d com.apple.quarantine adalmao</code>.</div>
+</section>
+
 <section id="install">
-  <h2>Installation</h2>
-  <p class="sub">Requires Go 1.22+ (to build) and AdaL CLI. Pre-built releases aren't published yet.</p>
+  <h2>Build from source</h2>
+  <p class="sub">Requires Go 1.22+ and AdaL CLI. Prefer a pre-built binary? See <a href="#download">Download</a>.</p>
   <h3>Windows (PowerShell)</h3>
   <div class="code"><pre><span class="k">git</span> clone https://github.com/ab2030909/AdaLMAO.git ; <span class="k">cd</span> AdaLMAO
 ./scripts/build.ps1
@@ -348,7 +375,7 @@ adalmao attest [install-hook | remove-hook]</pre><button class="copy">Copy</butt
 adalmao update --apply      <span class="c"># download, verify SHA-256, swap binary (old kept as .old)</span>
 adalmao uninstall           <span class="c"># removes only AdaLmao's hooks; your data stays</span>
 adalmao uninstall --purge   <span class="c"># also deletes ~/.adalmao</span></pre><button class="copy">Copy</button></div>
-  <p>The updater downloads only from HTTPS GitHub hosts, requires a matching <code>checksums.txt</code>, and never runs downloaded scripts. As of v0.1.1 <b>no release is published</b>, so there is nothing to fetch yet. Uninstall never restores an old backup over newer settings.</p>
+  <p>The updater downloads only from HTTPS GitHub hosts, requires a matching <code>checksums.txt</code>, and never runs downloaded scripts. v0.1.1 is the first published release, so there is nothing newer to fetch yet and <code>update --apply</code> has not been exercised against a real release. Uninstall never restores an old backup over newer settings.</p>
 </section>
 
 <section id="limits">
@@ -372,7 +399,7 @@ adalmao uninstall --purge   <span class="c"># also deletes ~/.adalmao</span></pr
     <tr><td>Modes · Budget · Preflight · Pre-push · Tune · Verify</td><td><span class="tag t-ok">DONE</span></td><td>Budget cost is an estimate from your prices.</td></tr>
     <tr><td>Guard</td><td><span class="tag t-part">PARTIAL</span></td><td>Warns only; can't stop spending.</td></tr>
     <tr><td>Loop</td><td><span class="tag t-part">PARTIAL</span></td><td>Iteration and time caps only.</td></tr>
-    <tr><td>Update</td><td><span class="tag t-part">PARTIAL</span></td><td>No release published yet.</td></tr>
+    <tr><td>Update</td><td><span class="tag t-part">PARTIAL</span></td><td>Checksum-verified; untested against a real newer release.</td></tr>
     <tr><td>Party</td><td><span class="tag t-part">PARTIAL</span></td><td>Manual presets.</td></tr>
     <tr><td>Statusline / HUD</td><td><span class="tag t-no">UNSUPPORTED</span></td><td>Not offered by AdaL. Use <code>adalmao status</code>.</td></tr>
     <tr><td>Linux / macOS runtime</td><td><span class="tag t-part">UNTESTED</span></td><td>Cross-compiles cleanly.</td></tr>
@@ -393,8 +420,19 @@ adalmao uninstall --purge   <span class="c"># also deletes ~/.adalmao</span></pr
   <p><code>adalmao config validate</code>, <code>adalmao config show</code>, <code>adalmao config path</code>.</p>
 </section>
 
+<section id="report">
+  <h2>Report a bug</h2>
+  <p>Open an issue at <a href="https://github.com/ab2030909/AdaLMAO/issues">github.com/ab2030909/AdaLMAO/issues</a> with:</p>
+  <ul>
+    <li>Your OS and <code>adalmao version</code>, plus your AdaL version</li>
+    <li>The output of <code>adalmao verify</code></li>
+    <li>What you expected vs. what happened</li>
+  </ul>
+  <p><b>Linux and macOS runtime reports are especially welcome</b> — that's the main gap in this release. Don't paste secrets; <code>~/.adalmao/decisions.log</code> redacts likely secrets, but check before sharing. For security-sensitive issues, contact the maintainer privately instead of filing a public issue. Contributions: see <a href="https://github.com/ab2030909/AdaLMAO/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.</p>
+</section>
+
 <footer>
-  <span><img src="assets/logo-small.png" alt="">MIT licensed · v0.1.1</span>
+  <span><img src="assets/logo-small.png" alt="">MIT licensed · v0.1.1 Early Access</span>
   <span><a href="https://github.com/ab2030909/AdaLMAO">GitHub</a> · <a href="https://docs.sylph.ai/customize/lifecycle-hooks/">AdaL hooks docs</a></span>
 </footer>
 </main>
