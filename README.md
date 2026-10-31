@@ -1,4 +1,4 @@
-# 😂 AdaLmao
+#  AdaLmao Model Action Oversight
 
 **Your AdaL CLI's chaotic little bodyguard.**
 
