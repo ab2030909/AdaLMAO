@@ -1,4 +1,5 @@
-#  AdaLmao Model Action Oversight
+#  AdaLmao 
+AdaL Model Action Oversight
 
 **Your AdaL CLI's chaotic little bodyguard.**
 
