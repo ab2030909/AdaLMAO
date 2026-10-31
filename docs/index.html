@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdaLmao — Documentation</title>
+<meta name="description" content="AdaLmao: your AdaL CLI's chaotic little bodyguard. Guardrails, enforcement, sentinel, modes, budget, preflight and more.">
+<meta property="og:title" content="AdaLmao — Your AdaL CLI's chaotic little bodyguard">
+<meta property="og:image" content="assets/logo.png">
+<meta name="theme-color" content="#16101a">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button class="menu" onclick="document.querySelector('aside').classList.toggle('open')" aria-label="Menu">☰</button>
+<div class="layout">
+<aside>
+  <a class="brand" href="#overview" aria-label="AdaLmao home"><img src="assets/logo-small.png" alt="AdaLmao mascot logo"></a>
+  <div class="ver">v0.1.1 · docs</div>
+  <nav id="nav">
+    <h6>Start</h6>
+    <a href="#overview">Overview</a>
+    <a href="#install">Installation</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#verify">Verification</a>
+    <h6>Features</h6>
+    <a href="#guardrails">Guardrails</a>
+    <a href="#enforce">Enforce</a>
+    <a href="#sentinel">Sentinel</a>
+    <a href="#modes">Modes</a>
+    <a href="#git">Preflight &amp; pre-push</a>
+    <a href="#budget">Budget &amp; Guard</a>
+    <a href="#loop">Loop</a>
+    <a href="#more">Tune, Party, Spank, Attest</a>
+    <h6>Reference</h6>
+    <a href="#commands">Commands</a>
+    <a href="#config">Configuration</a>
+    <a href="#update">Update &amp; uninstall</a>
+    <a href="#limits">Limitations</a>
+    <a href="#status">Feature status</a>
+    <a href="#faq">Troubleshooting</a>
+  </nav>
+</aside>
+
+<main>
+<div class="hero" id="overview">
+  <div class="hero-grid">
+  <div>
+  <span class="pill"><i></i> Open source · Go · zero dependencies</span>
+  <h1>Your AdaL CLI's <em>chaotic little bodyguard.</em></h1>
+  <p class="lead">AdaLmao plugs into AdaL's lifecycle hooks to block destructive commands, protect your tests and secrets, watch for regressions, inject focus modes, track token usage and check Git before you push. One standalone binary. No external AI API. No database.</p>
+  <div class="cta">
+    <a class="btn primary" href="#install">Get started →</a>
+    <a class="btn" href="https://github.com/ab2030909/AdaLMAO">GitHub ↗</a>
+    <a class="btn" href="#commands">Commands</a>
+  </div>
+  </div>
+  <img class="mascot" src="assets/logo.png" alt="AdaLmao mascot: a chibi hacker girl with a laptop and a padlock shield">
+  </div>
+  <div class="term"><div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="c"># the agent tries something dumb…</span>
+<span class="k">bash</span> › git reset --hard HEAD~3
+
+<span class="blocked">&gt;&gt; NICE TRY!</span>
+
+AdaLmao blocked a dangerous operation. It was NOT executed.
+
+Rule:   <span class="p">no-hard-reset</span>
+Reason: `git reset --hard` irreversibly discards uncommitted work.
+Safer alternative: Use `git stash` or `git reset --soft`/`--mixed`,
+                   or ask the user to run it.</pre></div>
+  <div class="warn"><b>Be realistic:</b> AdaLmao is a practical guardrail layer, <b>not a security sandbox</b>. AdaL hooks <em>fail open</em> — if a hook times out or fails to launch, the action goes ahead. It's a seatbelt, not a vault. Keep backups and commit often.</div>
+
+  <div class="grid">
+    <div class="card"><div class="ic">01</div><h4>Guardrails</h4><p>Safe / review / risky / blocked verdicts for every file edit and delete.</p></div>
+    <div class="card"><div class="ic">02</div><h4>Enforce</h4><p>Deterministic shell rules: hard reset, force push, <code>rm -rf /</code>, DCO sign-off, curl | sh.</p></div>
+    <div class="card"><div class="ic">03</div><h4>Sentinel</h4><p>Spots deleted tests, fewer assertions, coverage drops after each tool call.</p></div>
+    <div class="card"><div class="ic">04</div><h4>Modes</h4><p>Focus, Paranoid, Debug, Teacher… composable, injected into every prompt.</p></div>
+    <div class="card"><div class="ic">05</div><h4>Budget</h4><p>Real token counts from AdaL's transcript, plus optional cost estimates and warnings.</p></div>
+    <div class="card"><div class="ic">06</div><h4>Preflight</h4><p>Read-only Git check with confirmed-conflict detection and optional pre-push hook.</p></div>
+  </div>
+</div>
+
+<section id="install">
+  <h2>Installation</h2>
+  <p class="sub">Requires Go 1.22+ (to build) and AdaL CLI. Pre-built releases aren't published yet.</p>
+  <h3>Windows (PowerShell)</h3>
+  <div class="code"><pre><span class="k">git</span> clone https://github.com/ab2030909/AdaLMAO.git ; <span class="k">cd</span> AdaLMAO
+./scripts/build.ps1
+<span class="k">mkdir</span> C:\adalmao ; <span class="k">copy</span> dist\adalmao.exe C:\adalmao\
+C:\adalmao\adalmao.exe install        <span class="c"># then restart AdaL</span>
+<span class="c"># optional: add C:\adalmao to PATH so you can type `adalmao`</span></pre><button class="copy">Copy</button></div>
+  <h3>Linux / macOS</h3>
+  <div class="code"><pre><span class="k">git</span> clone https://github.com/ab2030909/AdaLMAO.git &amp;&amp; <span class="k">cd</span> AdaLMAO
+make build &amp;&amp; sudo install dist/adalmao /usr/local/bin/
+adalmao install                         <span class="c"># then restart AdaL</span></pre><button class="copy">Copy</button></div>
+  <h3>What <code>install</code> does</h3>
+  <ul>
+    <li>Backs up <code>~/.adal/settings.json</code> first (<code>settings.json.adalmao-&lt;time&gt;.bak</code>).</li>
+    <li>Adds only AdaLmao-owned hooks: <code>PreToolUse</code>, <code>PostToolUse</code>, <code>UserPromptSubmit</code>, <code>Stop</code>.</li>
+    <li>Keeps every other setting and hook. Running it twice changes nothing.</li>
+    <li>Refuses to touch a settings file that isn't valid JSON.</li>
+  </ul>
+  <div class="note"><b>Windows path rule (verified):</b> AdaL runs hooks through <code>cmd.exe /c</code>, and a hook command containing double quotes silently failed to launch in testing. So install from a simple path like <code>C:\adalmao\</code>. AdaLmao converts the path to its 8.3 short form and refuses with instructions if it still has spaces. If you move the binary, run <code>adalmao install</code> again.</div>
+</section>
+
+<section id="quickstart">
+  <h2>Quick start</h2>
+  <ol class="steps">
+    <li><b>Install the hooks</b> and restart AdaL.<div class="code"><pre>adalmao install</pre><button class="copy">Copy</button></div></li>
+    <li><b>Verify it works.</b> The first launches each hook the way AdaL does; the second runs one real headless AdaL turn in a throwaway repo (uses a little quota).<div class="code"><pre>adalmao verify
+adalmao verify --live</pre><button class="copy">Copy</button></div></li>
+    <li><b>Turn on a mode or two.</b><div class="code"><pre>adalmao mode on focus paranoid</pre><button class="copy">Copy</button></div></li>
+    <li><b>Dry-run the rules</b> on any command without involving AdaL.<div class="code"><pre>adalmao check -- git reset --hard
+adalmao check --delete internal/parser_test.go</pre><button class="copy">Copy</button></div></li>
+    <li><b>See everything at a glance.</b><div class="code"><pre>adalmao status</pre><button class="copy">Copy</button></div></li>
+  </ol>
+</section>
+
+<section id="verify">
+  <h2>Verification</h2>
+  <p class="sub">What was actually exercised against a real AdaL 1.11.5 on Windows 10, using throwaway repos only.</p>
+  <div class="cols">
+    <div class="card"><h4>Confirmed <span class="tag t-ok">VERIFIED</span></h4><ul>
+      <li>AdaL runs the hooks and sends <code>session_id</code>, <code>cwd</code>, <code>hook_event_name</code>, <code>transcript_path</code>, <code>tool_name</code>, <code>tool_input</code>.</li>
+      <li>Tools seen: <code>bash</code> (<code>command</code>), <code>create_file</code>, <code>replace_by_string</code> (<code>file_path</code>, <code>old_string</code>, <code>new_string</code>).</li>
+      <li><code>git reset --hard</code>, <code>git commit -s</code>, <code>rm a_test.go</code> and editing <code>.env</code> were blocked before running.</li>
+      <li>Files and commit history intact; the agent relayed the reason.</li>
+      <li>Safe operations ran normally; malformed input fails open.</li></ul></div>
+    <div class="card"><h4>Not verified <span class="tag t-part">UNTESTED</span></h4><ul>
+      <li>Linux and macOS at runtime (cross-compiled only).</li>
+      <li>Every possible AdaL tool, including MCP tools (unrecognised tools aren't inspected).</li>
+      <li>AdaL Desktop (<code>--ide</code>) behaviour.</li>
+      <li><code>update --apply</code> against a real release (none published yet).</li></ul></div>
+  </div>
+</section>
+
+<section id="guardrails">
+  <h2>Guardrails</h2>
+  <p class="sub">Classifies file operations from what the hook can see before the tool runs.</p>
+  <div class="tbl"><table>
+    <tr><th>Verdict</th><th>Meaning</th><th>Examples</th></tr>
+    <tr><td><span class="tag t-ok">ALLOWED</span></td><td>Runs normally.</td><td>Creating a file, editing ordinary source.</td></tr>
+    <tr><td><span class="tag t-part">REVIEW</span></td><td>Runs; a note is sent to the agent.</td><td>Editing a test or config file, whole-file overwrite, signature or default-value change, reading <code>.env</code>.</td></tr>
+    <tr><td><span class="tag t-part">RISKY</span></td><td>Runs; a stronger note is sent.</td><td>Deleting a file, removing a public function, <code>sudo</code>, recursive delete.</td></tr>
+    <tr><td><span class="tag t-no">BLOCKED</span></td><td>Never reaches the tool (exit code 2).</td><td>Writing <code>.env</code> or <code>.git/*</code>, deleting tests, editing AdaL/AdaLmao settings, your protected paths.</td></tr>
+  </table></div>
+  <div class="note">AdaL says <code>PreToolUse</code> can't add context, so review/risky notes are queued and delivered with the next <code>PostToolUse</code> result in that session.</div>
+  <h3>Manage protected paths</h3>
+  <div class="code"><pre>adalmao guardrails status
+adalmao guardrails protect migrations/      <span class="c"># trailing / = whole directory</span>
+adalmao guardrails protect "secrets.*"
+adalmao guardrails unprotect migrations/
+adalmao guardrails disable                  <span class="c"># or: enable</span></pre><button class="copy">Copy</button></div>
+</section>
+
+<section id="enforce">
+  <h2>Enforce</h2>
+  <p class="sub">A deterministic rule engine for shell commands. It parses, not just greps.</p>
+  <div class="tbl"><table>
+    <tr><th>Rule</th><th>Blocks</th></tr>
+    <tr><td><code>no-hard-reset</code></td><td><code>git reset --hard</code> in any form (even <code>git -C x</code>, <code>sudo</code>, <code>bash -c "…"</code>)</td></tr>
+    <tr><td><code>protect-paths</code></td><td>Deleting, moving, overwriting or redirecting into <code>.git</code>, env files, test files, critical config, your protected paths, AdaL/AdaLmao config</td></tr>
+    <tr><td><code>no-dco-signoff</code></td><td><code>git commit -s</code>, <code>--signoff</code>, <code>-sm</code>, <code>--trailer Signed-off-by</code> (unless <code>allow_dco_signoff</code>)</td></tr>
+    <tr><td><code>git-clean-force</code></td><td><code>git clean -f/-fd/-fdx</code> without a dry run</td></tr>
+    <tr><td><code>no-force-push</code></td><td><code>git push --force / -f / +ref</code></td></tr>
+    <tr><td><code>no-discard-all</code></td><td><code>git checkout .</code>, <code>git restore .</code>, <code>checkout -f</code></td></tr>
+    <tr><td><code>git-history-rewrite</code></td><td><code>filter-branch</code>, <code>reflog expire</code>, <code>gc --prune=now</code></td></tr>
+    <tr><td><code>catastrophic-delete</code></td><td><code>rm -rf</code> on <code>/</code>, <code>~</code>, <code>.</code>, <code>..</code>, drive roots, home, project root</td></tr>
+    <tr><td><code>pipe-to-shell</code></td><td><code>curl … | sh</code>, <code>iwr … | iex</code></td></tr>
+    <tr><td><code>disk-destroy</code></td><td><code>mkfs</code>, <code>dd of=/dev/…</code>, <code>format X:</code>, fork bombs</td></tr>
+  </table></div>
+  <p><b>Not blocked, only flagged:</b> <code>sudo</code>/<code>doas</code>, <code>git rebase</code>, <code>commit --amend</code>, <code>branch -D</code>, discarding single files, recursive deletes of ordinary folders. <code>echo "git reset --hard"</code> is not a false positive.</p>
+  <h3>How commands are understood</h3>
+  <p>Tokenized with quote and separator awareness (<code>; &amp;&amp; || |</code>), then normalized: <code>sudo</code>/<code>env</code> wrappers, <code>bash -c</code>, <code>cmd /c</code>, <code>powershell -Command</code>, <code>$(…)</code>, backticks, redirects, and <code>git -C/-c</code> options.</p>
+  <h3>Your own rules</h3>
+  <div class="code"><pre>{
+  <span class="k">"enforce"</span>: {
+    <span class="k">"disabled_builtins"</span>: [<span class="g">"git-clean-force"</span>],
+    <span class="k">"rules"</span>: [
+      { <span class="k">"id"</span>: <span class="g">"no-npm-publish"</span>, <span class="k">"enabled"</span>: true,
+        <span class="k">"pattern"</span>: <span class="g">"npm publish"</span>, <span class="k">"action"</span>: <span class="g">"block"</span>,
+        <span class="k">"reason"</span>: <span class="g">"Publishing requires manual review."</span> }
+    ]
+  }
+}</pre><button class="copy">Copy</button></div>
+  <p><code>pattern</code> matches the <em>start</em> of a normalized command. Add <code>"regex": true</code> for a regex. <code>action</code> is <code>block</code> or <code>warn</code>.</p>
+  <div class="code"><pre>adalmao enforce rules                  <span class="c"># list built-in + custom rules</span>
+adalmao check -- npm publish          <span class="c"># test a rule, exit code 2 = blocked</span>
+adalmao enforce disable               <span class="c"># or: enable</span></pre><button class="copy">Copy</button></div>
+</section>
+
+<section id="sentinel">
+  <h2>Sentinel</h2>
+  <p class="sub">After mutating tool calls it inspects <code>git status</code> and <code>git diff HEAD</code>, and reports each finding once per session.</p>
+  <ul>
+    <li>Deleted test files and deleted important files</li>
+    <li>Fewer assertions in test diffs (removed vs added)</li>
+    <li>Changes to your protected paths</li>
+    <li>Coverage drops — <b>only</b> when a report exists (<code>coverage.out</code>, <code>lcov.info</code>, <code>coverage-summary.json</code>, <code>coverage.xml</code>); otherwise "unavailable"</li>
+  </ul>
+  <p>Severity is <code>info</code>, <code>warning</code> or <code>block</code>. A <code>PostToolUse</code> hook can't undo a change, so <code>block</code> tells the agent to stop and report. It makes no claim of universal regression detection.</p>
+  <div class="code"><pre>adalmao sentinel status
+adalmao config set sentinel.severity block</pre><button class="copy">Copy</button></div>
+</section>
+
+<section id="modes">
+  <h2>Modes</h2>
+  <p class="sub">Short instruction fragments added to every prompt via <code>UserPromptSubmit</code>. Up to six at once.</p>
+  <div class="tbl"><table>
+    <tr><th>Mode</th><th>Purpose</th></tr>
+    <tr><td><code>paranoid</code></td><td>Maximum caution; preserve your uncommitted work, prefer reversible actions.</td></tr>
+    <tr><td><code>debug</code></td><td>Find the root cause, small targeted fixes, no unrelated refactoring.</td></tr>
+    <tr><td><code>focus</code></td><td>Stop overthinking; only the requested task.</td></tr>
+    <tr><td><code>ship-it</code></td><td>Implementation first, minimal discussion.</td></tr>
+    <tr><td><code>perf</code></td><td>Measurable performance problems, readable code.</td></tr>
+    <tr><td><code>tech-cofounder</code></td><td>Product and architecture judgment; avoid needless features.</td></tr>
+    <tr><td><code>terse</code></td><td>Short answers, no summaries.</td></tr>
+    <tr><td><code>teacher</code></td><td>Explain concepts with simple examples.</td></tr>
+  </table></div>
+  <p><b>Precedence on conflict:</b> <code>paranoid &gt; debug &gt; focus &gt; ship-it &gt; perf &gt; tech-cofounder &gt; terse &gt; teacher</code>. Known conflicts (terse/teacher, ship-it/paranoid, focus/tech-cofounder) are reported when you enable them.</p>
+  <div class="code"><pre>adalmao modes
+adalmao mode on focus debug
+adalmao mode off focus
+adalmao mode off                      <span class="c"># all off</span></pre><button class="copy">Copy</button></div>
+  <div class="note">Modes are global. AdaL only loads hooks from <code>~/.adal/settings.json</code> — there's no project-level scope.</div>
+</section>
+
+<section id="git">
+  <h2>Git preflight &amp; pre-push</h2>
+  <p class="sub">Read-only. It never fetches, rebases, merges or pushes.</p>
+  <div class="code"><pre>adalmao preflight</pre><button class="copy">Copy</button></div>
+  <div class="term"><div class="bar"><i></i><i></i><i></i></div>
+<pre>Branch:     feature
+[✓] Working tree clean
+Base:       origin/main (you are ahead 1, behind 1)
+⚠️  Branch is behind origin/main.
+
+🚨 Confirmed merge conflicts with origin/main (via git merge-tree):
+- f.txt
+
+Suggested next steps:
+- Review changes before rebasing; AdaLmao never rebases for you.</pre></div>
+  <p>Conflicts are labelled <b>confirmed</b> (<code>git merge-tree --write-tree</code>, Git ≥ 2.38) or only <b>potential</b> (files changed on both sides — fallback heuristic). It also reports in-progress merge/rebase, ahead/behind, and commits the base already contains.</p>
+  <h3>Optional pre-push hook</h3>
+  <div class="code"><pre>adalmao prepush install
+adalmao prepush status
+adalmao prepush remove</pre><button class="copy">Copy</button></div>
+  <ul>
+    <li>Refuses to overwrite a pre-push hook it doesn't own (respects <code>core.hooksPath</code>).</li>
+    <li>Aborts a push <b>only</b> for an in-progress merge/rebase or confirmed conflicts with the base; otherwise warns.</li>
+    <li>Fails open if the binary moved. Bypass once with <code>git push --no-verify</code> or <code>ADALMAO_SKIP_PREPUSH=1</code>.</li>
+  </ul>
+</section>
+
+<section id="budget">
+  <h2>Budget &amp; Guard</h2>
+  <p class="sub">Real numbers from AdaL, never invented ones.</p>
+  <p>AdaL writes <code>{"type":"usage", model, input_tokens, output_tokens, cached_read_input_tokens, cache_creation_tokens, reasoning_tokens}</code> records into the transcript it passes to hooks. <code>adalmao budget</code> sums them per model (subagents included). Until usage exists it prints <code>Usage data unavailable</code>.</p>
+  <p>AdaL reports <b>no prices</b>, so cost is an <b>estimate</b> from prices you provide. With no prices set, there is no cost and Guard stays silent.</p>
+  <div class="code"><pre>adalmao budget
+adalmao guard status
+adalmao config set budget.input_price_per_mtok 3
+adalmao config set budget.output_price_per_mtok 15
+adalmao config set budget.cached_input_price_per_mtok 0.3
+adalmao config set budget.session_limit 5
+adalmao config set budget.warning_threshold 0.8</pre><button class="copy">Copy</button></div>
+  <p>Guard warns once at the threshold and once at the limit through prompt context. <b>It cannot stop spending</b> — AdaL gives hooks no way to.</p>
+</section>
+
+<section id="loop">
+  <h2>Loop</h2>
+  <p class="sub">A bounded experiment: ask AdaL to do a task, run your verification command, record the result, repeat until it passes or limits hit.</p>
+  <div class="code"><pre>adalmao loop --task "Make the failing test pass" \
+             --verify "go test ./..." \
+             --max-iterations 3 --max-minutes 30 --yes</pre><button class="copy">Copy</button></div>
+  <ul>
+    <li><b>Explicit start:</b> without <code>--yes</code> it only prints the plan.</li>
+    <li><b>Isolated:</b> works in a new git worktree and branch from <code>HEAD</code>; your working tree is untouched. Never merges.</li>
+    <li><b>Safe default:</b> <code>--permission-mode acceptEdits</code> (edits run, shell commands don't). Your verify command is refused if enforce rules would block it.</li>
+    <li><b>Capped:</b> hard maximums 10 iterations and 240 minutes. Score is pass/fail by exit code. Ledger at <code>~/.adalmao/loops/*.jsonl</code>.</li>
+    <li>No token budget — AdaL exposes none to wrappers. Your installed hooks still guard the loop's agent.</li>
+  </ul>
+</section>
+
+<section id="more">
+  <h2>Tune, Party, Spank, Attest</h2>
+  <div class="grid">
+    <div class="card"><h4>Tune <span class="tag t-ok">read-only</span></h4><p>Shows your real model, effort setting and supported levels from AdaL's files. Never edits them. Change via <code>/model config</code> or <code>adal --thinking-effort</code>.</p></div>
+    <div class="card"><h4>Party <span class="tag t-part">manual</span></h4><p>Named mode presets: builder, reviewer, optimizer, mentor. <code>adalmao party use reviewer</code>. No per-subagent assignment (AdaL has none).</p></div>
+    <div class="card"><h4>Spank <span class="tag t-ok">guidance</span></h4><p><code>adalmao spank explain</code> — how to keep long jobs alive (tmux, caffeinate, power settings). Changes nothing.</p></div>
+    <div class="card"><h4>Attest <span class="tag t-ok">opt-in</span></h4><p>Optional <code>Assisted-by: AdaL</code> trailer hook. Never signs or adds <code>Signed-off-by</code>. Needs <code>attest.enabled=true</code>.</p></div>
+  </div>
+  <div class="code"><pre>adalmao tune
+adalmao party profiles | show reviewer | use reviewer
+adalmao attest [install-hook | remove-hook]</pre><button class="copy">Copy</button></div>
+</section>
+
+<section id="commands">
+  <h2>Command reference</h2>
+  <div class="tbl"><table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><code>install</code></td><td>Register hooks in AdaL (idempotent, backs up settings).</td></tr>
+    <tr><td><code>uninstall [--purge]</code></td><td>Remove only AdaLmao's hooks; <code>--purge</code> also deletes <code>~/.adalmao</code>.</td></tr>
+    <tr><td><code>verify [--live] [--model k]</code></td><td>Check hooks launch and block correctly; <code>--live</code> uses real AdaL.</td></tr>
+    <tr><td><code>status</code></td><td>Hooks, modes, guardrails, git state, usage, budget.</td></tr>
+    <tr><td><code>modes</code> · <code>mode on|off [names]</code></td><td>List / set active modes.</td></tr>
+    <tr><td><code>guardrails enable|disable|status|protect|unprotect</code></td><td>Manage file protections.</td></tr>
+    <tr><td><code>enforce enable|disable|rules</code></td><td>Manage command rules.</td></tr>
+    <tr><td><code>sentinel enable|disable|status</code></td><td>Regression monitor.</td></tr>
+    <tr><td><code>check -- &lt;cmd&gt;</code> · <code>check --delete|--write &lt;path&gt;</code></td><td>Dry-run the rules. Exit code 2 = blocked.</td></tr>
+    <tr><td><code>budget</code> · <code>guard status</code></td><td>Token usage, estimates and warning state.</td></tr>
+    <tr><td><code>preflight</code></td><td>Git pre-push inspection.</td></tr>
+    <tr><td><code>prepush install|remove|status</code></td><td>Optional git pre-push hook.</td></tr>
+    <tr><td><code>loop …</code></td><td>Bounded verified experiment loop.</td></tr>
+    <tr><td><code>tune</code> · <code>party …</code> · <code>spank explain</code> · <code>attest</code></td><td>See above.</td></tr>
+    <tr><td><code>update [--apply]</code></td><td>Check / install a checksum-verified release.</td></tr>
+    <tr><td><code>log</code></td><td>Last 20 AdaLmao decisions.</td></tr>
+    <tr><td><code>config [path|show|validate|set k v]</code></td><td>View and edit configuration.</td></tr>
+    <tr><td><code>version</code> · <code>--help</code></td><td>Version and help.</td></tr>
+  </table></div>
+</section>
+
+<section id="config">
+  <h2>Configuration</h2>
+  <p class="sub"><code>~/.adalmao/config.json</code> — override the folder with <code>ADALMAO_HOME</code> (and AdaL's with <code>ADAL_HOME</code>). Missing file = defaults; invalid = defaults plus a warning; unknown fields are preserved when saving.</p>
+  <div class="code"><pre>{
+  <span class="k">"version"</span>: 1,
+  <span class="k">"general"</span>:    { <span class="k">"enabled"</span>: true, <span class="k">"active_modes"</span>: [<span class="g">"focus"</span>] },
+  <span class="k">"guardrails"</span>: { <span class="k">"enabled"</span>: true, <span class="k">"protect_env_files"</span>: true, <span class="k">"protect_git_directory"</span>: true,
+                  <span class="k">"protect_tests"</span>: true, <span class="k">"protect_config_files"</span>: true,
+                  <span class="k">"warn_on_public_api_changes"</span>: true, <span class="k">"warn_on_default_value_changes"</span>: true,
+                  <span class="k">"protected_paths"</span>: [<span class="g">"migrations/"</span>, <span class="g">"secrets.yml"</span>] },
+  <span class="k">"enforce"</span>:    { <span class="k">"enabled"</span>: true, <span class="k">"allow_dco_signoff"</span>: false, <span class="k">"disabled_builtins"</span>: [], <span class="k">"rules"</span>: [] },
+  <span class="k">"sentinel"</span>:   { <span class="k">"enabled"</span>: true, <span class="k">"severity"</span>: <span class="g">"warning"</span> },
+  <span class="k">"budget"</span>:     { <span class="k">"enabled"</span>: true, <span class="k">"session_limit"</span>: 5.0, <span class="k">"warning_threshold"</span>: 0.8,
+                  <span class="k">"input_price_per_mtok"</span>: 0, <span class="k">"output_price_per_mtok"</span>: 0, <span class="k">"cached_input_price_per_mtok"</span>: 0 },
+  <span class="k">"git"</span>:        { <span class="k">"preflight_enabled"</span>: true, <span class="k">"base_branch"</span>: <span class="g">""</span> },
+  <span class="k">"attest"</span>:     { <span class="k">"enabled"</span>: false, <span class="k">"trailer"</span>: <span class="g">"Assisted-by: AdaL"</span> },
+  <span class="k">"profiles"</span>:   { <span class="k">"builder"</span>: [<span class="g">"ship-it"</span>], <span class="k">"reviewer"</span>: [<span class="g">"paranoid"</span>], <span class="k">"optimizer"</span>: [<span class="g">"perf"</span>], <span class="k">"mentor"</span>: [<span class="g">"teacher"</span>] }
+}</pre><button class="copy">Copy</button></div>
+  <p>Edit safely with <code>adalmao config set budget.session_limit 3</code> (validated before saving). Logs live in <code>~/.adalmao/decisions.log</code> (likely secrets redacted). For debugging, <code>ADALMAO_CAPTURE=1</code> records raw hook payloads to <code>capture.jsonl</code> — opt-in, may contain code and prompts.</p>
+</section>
+
+<section id="update">
+  <h2>Update &amp; uninstall</h2>
+  <div class="code"><pre>adalmao update              <span class="c"># compare installed vs latest release</span>
+adalmao update --apply      <span class="c"># download, verify SHA-256, swap binary (old kept as .old)</span>
+adalmao uninstall           <span class="c"># removes only AdaLmao's hooks; your data stays</span>
+adalmao uninstall --purge   <span class="c"># also deletes ~/.adalmao</span></pre><button class="copy">Copy</button></div>
+  <p>The updater downloads only from HTTPS GitHub hosts, requires a matching <code>checksums.txt</code>, and never runs downloaded scripts. As of v0.1.1 <b>no release is published</b>, so there is nothing to fetch yet. Uninstall never restores an old backup over newer settings.</p>
+</section>
+
+<section id="limits">
+  <h2>Limitations &amp; security</h2>
+  <ul>
+    <li><b>Fail-open hooks:</b> timeout, crash or launch failure lets the action through.</li>
+    <li>Hooks can allow, block (<code>PreToolUse</code>, <code>UserPromptSubmit</code>) or add context (<code>PostToolUse</code>, <code>UserPromptSubmit</code>); they can't modify tool input, and <code>PostToolUse</code> can't undo a change.</li>
+    <li>AdaL loads hooks only from <code>~/.adal/settings.json</code> and must be restarted after install.</li>
+    <li>AdaL publishes no tool list. Detection is by name keywords plus common fields; unrecognised tools (MCP included) aren't inspected.</li>
+    <li>Shell parsing is a practical approximation: <code>eval</code>, encoded payloads, scripts that delete things internally, and anything run outside AdaL aren't covered.</li>
+    <li>No native status line, no per-subagent hooks, no token-budget API. AdaL may auto-update itself when invoked.</li>
+  </ul>
+</section>
+
+<section id="status">
+  <h2>Feature status</h2>
+  <div class="tbl"><table>
+    <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Hook integration</td><td><span class="tag t-ok">VERIFIED</span></td><td>Real AdaL 1.11.5, Windows.</td></tr>
+    <tr><td>Guardrails · Enforce · Sentinel</td><td><span class="tag t-ok">DONE</span></td><td>Sentinel coverage only with a report file.</td></tr>
+    <tr><td>Modes · Budget · Preflight · Pre-push · Tune · Verify</td><td><span class="tag t-ok">DONE</span></td><td>Budget cost is an estimate from your prices.</td></tr>
+    <tr><td>Guard</td><td><span class="tag t-part">PARTIAL</span></td><td>Warns only; can't stop spending.</td></tr>
+    <tr><td>Loop</td><td><span class="tag t-part">PARTIAL</span></td><td>Iteration and time caps only.</td></tr>
+    <tr><td>Update</td><td><span class="tag t-part">PARTIAL</span></td><td>No release published yet.</td></tr>
+    <tr><td>Party</td><td><span class="tag t-part">PARTIAL</span></td><td>Manual presets.</td></tr>
+    <tr><td>Statusline / HUD</td><td><span class="tag t-no">UNSUPPORTED</span></td><td>Not offered by AdaL. Use <code>adalmao status</code>.</td></tr>
+    <tr><td>Linux / macOS runtime</td><td><span class="tag t-part">UNTESTED</span></td><td>Cross-compiles cleanly.</td></tr>
+  </table></div>
+</section>
+
+<section id="faq">
+  <h2>Troubleshooting</h2>
+  <h3>Nothing gets blocked</h3>
+  <p>Restart AdaL after <code>adalmao install</code>. Run <code>adalmao verify</code>; if the launch test fails, your install path probably needs quoting — move the binary to <code>C:\adalmao\</code> and re-install. Then <code>adalmao verify --live</code> proves AdaL itself calls the hook.</p>
+  <h3>"hook did not launch"</h3>
+  <p>The binary moved or was deleted. Re-run <code>adalmao install</code> from its current location.</p>
+  <h3>Something was blocked that shouldn't be</h3>
+  <p>Find the rule with <code>adalmao log</code> or <code>adalmao check -- &lt;command&gt;</code>. Disable a built-in with <code>disabled_builtins</code>, remove a protected path with <code>guardrails unprotect</code>, or allow sign-offs with <code>enforce.allow_dco_signoff</code>.</p>
+  <h3>Budget says "Usage data unavailable"</h3>
+  <p>Usage is recorded once you submit prompts with the hooks installed. Cost also needs your own prices (see Budget).</p>
+  <h3>Config looks wrong</h3>
+  <p><code>adalmao config validate</code>, <code>adalmao config show</code>, <code>adalmao config path</code>.</p>
+</section>
+
+<footer>
+  <span><img src="assets/logo-small.png" alt="">MIT licensed · v0.1.1</span>
+  <span><a href="https://github.com/ab2030909/AdaLMAO">GitHub</a> · <a href="https://docs.sylph.ai/customize/lifecycle-hooks/">AdaL hooks docs</a></span>
+</footer>
+</main>
+</div>
+
+<script>
+// copy buttons
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+  const t=b.parentElement.querySelector('pre').innerText;
+  navigator.clipboard.writeText(t).then(()=>{b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',1400)});
+}));
+// scroll-spy
+const links=[...document.querySelectorAll('#nav a')];
+const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map.get(e.target.id);a&&a.classList.add('active')}})},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('main [id]').forEach(s=>map.has(s.id)&&io.observe(s));
+// close mobile menu on click
+links.forEach(a=>a.addEventListener('click',()=>document.querySelector('aside').classList.remove('open')));
+</script>
+</body>
+</html>
