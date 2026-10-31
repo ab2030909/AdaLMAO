@@ -22,11 +22,26 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     permissions: { contents: write }
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      # If a maintainer already published this release by hand (with locally verified binaries),
+      # do nothing so CI never overwrites those assets or their checksums.
+      - id: chk
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.chk.outputs.exists == 'false'
+        uses: actions/setup-go@v5
         with: { go-version: "1.22" }
-      - run: make cross VERSION=${GITHUB_REF_NAME#v}
-      - run: cd dist && sha256sum adalmao-* > checksums.txt && cat checksums.txt
-      - uses: softprops/action-gh-release@v2
-        with: { files: dist/* }
+      - if: steps.chk.outputs.exists == 'false'
+        run: make cross VERSION=${GITHUB_REF_NAME#v}
+      - if: steps.chk.outputs.exists == 'false'
+        run: cd dist && sha256sum adalmao-* > checksums.txt && cat checksums.txt
+      - if: steps.chk.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          prerelease: true
+          name: AdaLmao ${{ github.ref_name }} — Early Access
+          body_path: RELEASE_NOTES.md

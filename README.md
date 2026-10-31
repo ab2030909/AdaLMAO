@@ -17,6 +17,34 @@ Reason: `git reset --hard` irreversibly discards uncommitted work.
 Safer alternative: Use `git stash` or `git reset --soft`/`--mixed`, or ask the user to run it.
 ```
 
+## Release status: Early Access / Experimental
+
+**v0.1.1 is an early-access release, not a stable 1.0.** Expect rough edges and breaking changes before 1.0.
+
+| Platform | Status |
+|---|---|
+| Windows (amd64) | Tested with real AdaL CLI 1.11.5 (hook execution, command blocking, install/uninstall). |
+| Linux (amd64, arm64) | Cross-compiled only. **Runtime testing pending.** |
+| macOS (Intel, Apple Silicon) | Cross-compiled only. **Runtime testing pending.** |
+
+Go tests and `go vet` pass. Protection is best-effort, not complete: see [Integration limitations](#integration-limitations) and [Security limitations](#security-limitations).
+
+## Download
+
+Binaries and `checksums.txt` are attached to the [GitHub release](https://github.com/ab2030909/AdaLMAO/releases/tag/v0.1.1) (`adalmao-windows-amd64.exe`, `adalmao-linux-amd64`, `adalmao-linux-arm64`, `adalmao-darwin-amd64`, `adalmao-darwin-arm64`). Verify before running:
+
+```powershell
+# Windows PowerShell: compare against the matching line in checksums.txt
+(Get-FileHash .\adalmao-windows-amd64.exe -Algorithm SHA256).Hash.ToLower()
+```
+```bash
+# Linux / macOS
+sha256sum -c --ignore-missing checksums.txt     # macOS: shasum -a 256 -c --ignore-missing checksums.txt
+chmod +x adalmao-linux-amd64 && ./adalmao-linux-amd64 version
+```
+
+Then rename it to `adalmao` / `adalmao.exe`, put it somewhere permanent (Windows: a path without spaces, e.g. `C:\adalmao\`) and run `adalmao install`. The binaries are not code-signed; on macOS you may need to clear the quarantine flag (`xattr -d com.apple.quarantine adalmao`) and Windows SmartScreen may warn.
+
 ## Status legend
 
 ✅ implemented and verified · 🟡 partially implemented · ⏳ planned · 🚫 unsupported by AdaL
@@ -216,6 +244,10 @@ Pure Go. **Windows 10: built, tested, and verified with real AdaL.** Linux and m
 - Token-aware loop budgets if AdaL exposes usage to wrappers
 - More modes (security review, SRE, frontend, backend, database, migration)
 - First published release (so `update` has something to fetch)
+
+## Reporting bugs
+
+Open an issue at https://github.com/ab2030909/AdaLMAO/issues with: your OS, `adalmao version`, AdaL version, the output of `adalmao verify`, and what you expected vs. what happened. Linux/macOS runtime reports are especially welcome. **Do not paste secrets**; logs in `~/.adalmao/decisions.log` redact likely secrets, but check before sharing. For security-sensitive issues, please contact the maintainer privately rather than filing a public issue.
 
 ## Contributing
 
